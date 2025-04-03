@@ -154,11 +154,12 @@ class CudaPlatformBase(Platform):
             use_flashmla = (envs.VLLM_ATTENTION_BACKEND is None \
                 or envs.VLLM_ATTENTION_BACKEND == "FLASHMLA")
             from vllm.attention.ops.flashmla import is_flashmla_supported
-            if use_flashmla and is_flashmla_supported()[0] \
-                and cache_config.block_size != 64:
-                cache_config.block_size = 64
-                logger.info(
-                    "Forcing kv cache block size to 64 for FlashMLA backend.")
+            if use_flashmla and is_flashmla_supported()[0]:
+                updated_block_size = 64 if cls.has_device_capability(90) else 32
+                if cache_config.block_size != updated_block_size:
+                    cache_config.block_size = updated_block_size
+                    logger.info(
+                        "Forcing kv cache block size to %d for FlashMLA backend.", updated_block_size)
 
         if (parallel_config.data_parallel_size > 1
                 and compilation_config.use_cudagraph):
@@ -182,7 +183,8 @@ class CudaPlatformBase(Platform):
         if use_mla:
             # TODO(lucas): refactor to  be more concise
             #  we should probably consider factoring out V1 here
-            if selected_backend == _Backend.TRITON_MLA or block_size != 64:
+            flashmla_block_size = 64 if cls.has_device_capability(90) else 32
+            if selected_backend == _Backend.TRITON_MLA or block_size != flashmla_block_size:
                 if use_v1:
                     logger.info_once("Using Triton MLA backend on V1 engine.")
                     return ("vllm.v1.attention.backends.mla."
@@ -197,10 +199,10 @@ class CudaPlatformBase(Platform):
                     logger.warning(
                         "FlashMLA backend is not supported due to %s",
                         is_flashmla_supported()[1])
-                elif block_size != 64:
+                elif block_size != flashmla_block_size:
                     logger.warning(
                         "FlashMLA backend is not supported for block size %d"
-                        " (currently only supports block size 64).",
+                        " (currently only supports block size 32 for Ampere and 64 for Hopper).",
                         block_size)
                 else:
                     if use_v1:

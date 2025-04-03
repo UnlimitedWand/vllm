@@ -25,12 +25,13 @@ def is_flashmla_supported() -> Tuple[bool, Optional[str]]:
     """
     if not current_platform.is_cuda():
         return False, "FlashMLA is only supported on CUDA devices."
-    if current_platform.get_device_capability()[0] != 9:
-        return False, "FlashMLA is only supported on Hopper devices."
+    major, minor = current_platform.get_device_capability()
+    if (major != 8 or minor != 0) and major != 9:
+        return False, "FlashMLA is only supported on Ampere and Hopper devices."
     if not _flashmla_C_AVAILABLE:
         return False, "vllm._flashmla_C is not available, likely was not "\
             "compiled due to insufficient nvcc version or a supported arch "\
-            "(only sm90a currently) was not in the list of target arches to "\
+            "(only sm80 and sm90a currently) was not in the list of target arches to "\
             "compile for."
     return True, None
 
