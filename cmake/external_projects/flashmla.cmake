@@ -42,9 +42,9 @@ if(${CMAKE_CUDA_COMPILER_VERSION} VERSION_GREATER 12.3 AND FLASH_MLA_ARCHS)
     set(FlashMLA_SM80_SOURCES
         ${flashmla_SOURCE_DIR}/csrc/flash_fwd_mla_bf16_sm80.cu)
 
-    set(FlashMLA_SM90_SOURCES
-        ${flashmla_SOURCE_DIR}/csrc/flash_fwd_mla_bf16_sm90.cu
-        ${flashmla_SOURCE_DIR}/csrc/flash_fwd_mla_fp16_sm90.cu)
+#    set(FlashMLA_SM90_SOURCES
+#        ${flashmla_SOURCE_DIR}/csrc/flash_fwd_mla_bf16_sm90.cu
+#        ${flashmla_SOURCE_DIR}/csrc/flash_fwd_mla_fp16_sm90.cu)
 
     set(FlashMLA_INCLUDES
         ${flashmla_SOURCE_DIR}/csrc/cutlass/include
@@ -61,12 +61,12 @@ if(${CMAKE_CUDA_COMPILER_VERSION} VERSION_GREATER 12.3 AND FLASH_MLA_ARCHS)
             CUDA_ARCHS "${FLASH_MLA_SM80}")
     endif()
 
-    cuda_archs_loose_intersection(FLASH_MLA_SM90 "9.0a" "${CUDA_ARCHS}")
-    if(FLASH_MLA_SM90)
-        set_gencode_flags_for_srcs(
-            SRCS "${FlashMLA_SM90_SOURCES}"
-            CUDA_ARCHS "${FLASH_MLA_SM90}")
-    endif()
+#    cuda_archs_loose_intersection(FLASH_MLA_SM90 "9.0a" "${CUDA_ARCHS}")
+#    if(FLASH_MLA_SM90)
+#        set_gencode_flags_for_srcs(
+#            SRCS "${FlashMLA_SM90_SOURCES}"
+#            CUDA_ARCHS "${FLASH_MLA_SM90}")
+#    endif()
 
     list(APPEND FlashMLA_SOURCES ${FlashMLA_SM80_SOURCES})
     list(APPEND FlashMLA_SOURCES ${FlashMLA_SM90_SOURCES})
